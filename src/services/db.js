@@ -4,7 +4,7 @@ import initSqlJs from 'sql.js';
 let db = null;
 
 export async function initDb() {
-  const SQL = await initSqlJs({ locateFile: file => `https://sql.js.org/dist/${file}` });
+  const SQL = await initSqlJs({ locateFile: file => `/sql-wasm.wasm` });
 
   const saved = localStorage.getItem('db');
   db = saved
