@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@awesome-cordova-plugins/file-opener": "^8.0.2",
     "@capacitor-community/sqlite": "^7.0.0",
     "@capacitor-mlkit/barcode-scanning": "^7.2.1",
     "@capacitor/android": "^7.3.0",
@@ -22,6 +23,8 @@
     "@material/snackbar": "^14.0.0",
     "@tailwindcss/vite": "^4.1.10",
     "@zxing/browser": "^0.1.5",
+    "cordova-plugin-file-opener2": "^4.0.0",
+    "cordova-plugin-pdf-viewer": "^0.0.1",
     "heroicons": "^2.2.0",
     "history": "^5.3.0",
     "html5-qrcode": "^2.3.8",
