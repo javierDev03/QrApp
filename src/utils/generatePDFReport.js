@@ -1,71 +1,47 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Browser } from '@capacitor/browser';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export async function generatePDFReport(muebles = []) {
-  // Cargar la hoja membretada desde /public
-  const existingPdfBytes = await fetch('/Hoja Membretada.pdf').then(res => res.arrayBuffer());
-  const pdfDoc = await PDFDocument.load(existingPdfBytes);
-  const [templatePage] = pdfDoc.getPages();
-  const { width, height } = templatePage.getSize();
+  const doc = new jsPDF();
 
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  let y = height - 180; // Espaciado desde arriba (ajustable según el membrete)
+  // Cargar imagen de fondo como base64
+  const img = await loadImageBase64('/Hoja-Membretada.png');
 
-  // Título
-  templatePage.drawText('Reporte de Muebles', {
-    x: 50,
-    y,
-    size: 14,
-    font,
-    color: rgb(0, 0, 0),
+  // Dibujar imagen como fondo (A4: 210mm x 297mm)
+  doc.addImage(img, 'PNG', 0, 0, 210, 297);
+
+  // Crear tabla de contenido
+  autoTable(doc, {
+    startY: 60,
+    head: [['No.', 'Serie', 'Tipo', 'Ubicación', 'Marca', 'Fecha de Registro']],
+    body: muebles.map((m, i) => [
+      i + 1,
+      m.numeroSerie || '',
+      m.tipo || '',
+      m.ubicacion || '',
+      m.marca || '',
+      m.fechaRegistro || ''
+    ]),
+    styles: {
+      fontSize: 10,
+      cellPadding: 3,
+      halign: 'center'
+    },
+    theme: 'grid',
+    margin: { bottom: 40 }, // para evitar tapar el membrete inferior
+   
   });
 
-  y -= 25;
-
-  // Dibujar los datos de los muebles
-  muebles.forEach((mueble, i) => {
-    const text = `#${i + 1} | Serie: ${mueble.numeroSerie} | Tipo: ${mueble.tipo} | Ubicación: ${mueble.ubicacion}`;
-    templatePage.drawText(text, {
-      x: 50,
-      y,
-      size: 10,
-      font,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-
-    y -= 15;
-
-    if (y < 80 && i < muebles.length - 1) {
-      const newPage = pdfDoc.addPage([width, height]);
-      newPage.drawPage(templatePage); // duplicar fondo si quieres mantener membrete
-      y = height - 100;
-    }
-  });
-
-  const pdfBytes = await pdfDoc.save();
-
- const base64Data = await convertToBase64(pdfBytes);
-
-async function convertToBase64(buffer) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result.split(',')[1];
-      resolve(base64String);
-    };
-    reader.readAsDataURL(new Blob([buffer]));
-  });
+  // Descargar el PDF
+  doc.save('reporte-inventario.pdf');
 }
 
-await Filesystem.writeFile({
-  path: 'reporte-inventario.pdf',
-  data: base64Data,
-  directory: Directory.Downloads,
-  recursive: true
-});
-
-  alert('PDF guardado en la carpeta Descargas como "reporte-inventario.pdf".');
-
-  console.log('PDF guardado correctamente en Documentos');
+async function loadImageBase64(url) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
 }
