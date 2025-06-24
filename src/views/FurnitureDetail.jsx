@@ -74,6 +74,18 @@ const FurnitureDetail = () => {
                   placeholder={placeholder}
                   className="w-full bg-gray-900/50 border border-gray-500 text-white p-2 rounded placeholder-gray-400 resize-none max-h-32 overflow-y-auto"
                 />
+              ) : field === 'estado' ? (
+                <select
+                  name="estado"
+                  value={mueble.estado}
+                  onChange={handleChange}
+                  className="w-full bg-gray-900/50 border border-gray-500 text-white p-2 rounded placeholder-gray-400"
+                >
+                  <option value="">Selecciona un estado</option>
+                  <option value="Bueno">Bueno</option>
+                  <option value="Regular">Regular</option>
+                  <option value="Malo">Malo</option>
+                </select>
               ) : (
                 <input
                   type={field === 'fechaRegistro' ? 'date' : 'text'}

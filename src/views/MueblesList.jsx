@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMuebles } from '../services/db';
+import { generatePDFReport } from '../utils/generatePDFReport';
 
 const MueblesList = () => {
   const [muebles, setMuebles] = useState([]);
   const navigate = useNavigate();
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroUbicacion, setFiltroUbicacion] = useState('');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,9 +20,15 @@ const MueblesList = () => {
   }, []);
 
   const mueblesFiltrados = muebles.filter((m) => {
+    const fecha = new Date(m.fechaRegistro);
+    const desde = fechaInicio ? new Date(fechaInicio) : null;
+    const hasta = fechaFin ? new Date(fechaFin) : null;
+
     return (
       (!filtroTipo || m.tipo.toLowerCase().includes(filtroTipo.toLowerCase())) &&
-      (!filtroUbicacion || m.ubicacion.toLowerCase().includes(filtroUbicacion.toLowerCase()))
+      (!filtroUbicacion || m.ubicacion.toLowerCase().includes(filtroUbicacion.toLowerCase())) &&
+      (!desde || fecha >= desde) &&
+      (!hasta || fecha <= hasta)
     );
   });
 
@@ -45,6 +54,26 @@ const MueblesList = () => {
           onChange={(e) => setFiltroUbicacion(e.target.value)}
           className="p-2 rounded bg-gray-800 text-white placeholder-gray-400"
         />
+        <input
+          type="date"
+          value={fechaInicio}
+          onChange={(e) => setFechaInicio(e.target.value)}
+          className="p-2 rounded bg-gray-800 text-white placeholder-gray-400"
+        />
+        <input
+          type="date"
+          value={fechaFin}
+          onChange={(e) => setFechaFin(e.target.value)}
+          className="p-2 rounded bg-gray-800 text-white placeholder-gray-400"
+        />
+        {mueblesFiltrados.length > 0 && (
+          <button
+            onClick={() => generatePDFReport(mueblesFiltrados)}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full"
+          >
+            Descargar reporte PDF
+          </button>
+        )}
       </div>
       {muebles.length === 0 ? (
         <p className="text-center text-gray-400">No hay elementos registrados aún.</p>

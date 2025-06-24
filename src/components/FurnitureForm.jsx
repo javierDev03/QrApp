@@ -101,14 +101,18 @@ const FurnitureForm = ({ qrCode }) => {
       <label htmlFor="estado" className="text-white">
         Estado
       </label>
-      <input
+      <select
         id="estado"
         name="estado"
         value={formData.estado}
         onChange={handleChange}
-        placeholder="Ej: Bueno, Regular, Malo"
         className="p-2 rounded bg-gray-800 text-white"
-      />
+      >
+        <option value="">Selecciona un estado</option>
+        <option value="Bueno">Bueno</option>
+        <option value="Regular">Regular</option>
+        <option value="Malo">Malo</option>
+      </select>
       <label htmlFor="notas" className="text-white">
         Notas
       </label>
