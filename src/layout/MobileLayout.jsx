@@ -5,12 +5,14 @@ import {
   CameraIcon,
   UserIcon,
   PlusCircleIcon, // 👈 nuevo ícono importado
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 
 const tabs = [
   { name: 'Muebles', path: '/', icon: HomeIcon },
   { name: 'Escanear', path: '/scanner', icon: CameraIcon },
   { name: 'Registrar', path: '/registrar', icon: PlusCircleIcon }, // 👈 nuevo tab con ícono distinto
+  { name: 'Estadisticas', path: '/estadisticas', icon: ChartBarIcon },
   { name: 'Perfil', path: '/perfil', icon: UserIcon },
 ];
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getMuebles, updateMueble, deleteMueble } from '../services/db';
+import { getMuebles, updateMueble, deleteMueble } from '../services/firebaseMuebles';
+import { auth } from '../firebase';
 
 const FurnitureDetail = () => {
   const { id } = useParams();
@@ -11,8 +12,11 @@ const FurnitureDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const muebles = await getMuebles();
-        const encontrado = muebles.find(m => Number(m.id) === Number(id));
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const muebles = await getMuebles(user.uid);
+        const encontrado = muebles.find(m => m.id === id);
         if (encontrado) {
           setMueble(encontrado);
         }
@@ -28,20 +32,20 @@ const FurnitureDetail = () => {
     setMueble({ ...mueble, [e.target.name]: e.target.value });
   };
 
- const handleGuardar = () => {
+ const handleGuardar = async () => {
   const data = {
     ...mueble,
     fechaRegistro: new Date(mueble.fechaRegistro).toISOString().split('T')[0], // ← normaliza formato
   };
 
-  updateMueble(mueble.id, data);
+  await updateMueble(mueble.id, data);
   setEditando(false);
   alert('✅ Mueble actualizado');
 };
 
-  const handleEliminar = () => {
+  const handleEliminar = async () => {
     if (confirm('¿Estás seguro de eliminar este mueble?')) {
-      deleteMueble(mueble.id);
+      await deleteMueble(mueble.id);
       alert('🗑️ Mueble eliminado');
       navigate('/');
     }

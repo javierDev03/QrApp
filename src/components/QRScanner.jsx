@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { useNavigate } from 'react-router-dom';
-import { getMuebles } from '../services/db';
+import { getMuebles } from '../services/firebaseMuebles';
+import { auth } from '../firebase';
 
 const QRScanner = () => {
   const videoRef = useRef(null);
@@ -57,7 +58,10 @@ const QRScanner = () => {
 
   const handleQr = async (qrCode) => {
     try {
-      const muebles = await getMuebles();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const muebles = await getMuebles(user.uid);
       const limpioQR = qrCode.trim().toLowerCase();
       const existente = muebles.find(
         m => m.numeroSerie?.trim().toLowerCase() === limpioQR
@@ -65,10 +69,10 @@ const QRScanner = () => {
 
       if (existente) {
         alert('📌 Mueble ya registrado');
-        scannerRef.current?.stop?.(); // solo si existe
+        scannerRef.current?.stop?.();
         navigate(`/detalle/${existente.id}`);
       } else {
-        scannerRef.current?.stop?.(); // solo si existe
+        scannerRef.current?.stop?.();
         navigate(`/registrar?qr=${encodeURIComponent(qrCode)}`);
       }
     } catch (error) {

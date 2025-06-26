@@ -79,9 +79,9 @@ export async function generatePDFReport(muebles = []) {
       }
 
       console.log('✅ PDF guardado en:', fileInfo.uri);
-      alert('✅ PDF guardado correctamente. Abriendo...');
+      alert('✅ PDF guardado correctamente en la carpeta Documentos');
 
-      await Browser.open({ url: fileInfo.uri });
+      // await Browser.open({ url: fileInfo.uri });
     } catch (error) {
       console.error('❌ Error al guardar o abrir el PDF:', error);
       alert('❌ No se pudo guardar el archivo. Verifica permisos o almacenamiento.');

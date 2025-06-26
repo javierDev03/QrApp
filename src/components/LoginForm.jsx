@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // 👈 importar hook
-import { loginUser } from "../services/db";
+import { loginUser } from "../services/firebaseAuth";
+import { auth } from '../firebase';
 
 export default function LoginForm() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -11,12 +12,14 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = await loginUser(form);
-    if (user) {
-      alert("👋 Bienvenido " + user.nombre);
-      localStorage.setItem("usuario", JSON.stringify(user));
-      window.location.href = "/"; // redirigir forzando recarga
-    } else {
+    try {
+      const userCredential = await loginUser(form.email, form.password);
+      const user = userCredential.user;
+      alert("👋 Bienvenido " + user.email);
+      localStorage.setItem("usuario", JSON.stringify({ uid: user.uid, email: user.email }));
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
       alert("❌ Usuario no válido");
     }
   };

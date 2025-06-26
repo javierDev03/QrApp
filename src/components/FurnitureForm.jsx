@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { insertMueble, existsMueble, isDbReady } from "../services/db"; // ✅ Importa también existsMueble e isDbReady
+import { insertMueble } from "../services/firebaseMuebles";
+import { auth } from '../firebase'; // Asegúrate de importar auth también
 
 const FurnitureForm = ({ qrCode }) => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const FurnitureForm = ({ qrCode }) => {
     notas: "",
     fechaRegistro: "",
   });
+  const [errors, setErrors] = useState({});
 
   const navigate = useNavigate();
 
@@ -26,22 +28,43 @@ const FurnitureForm = ({ qrCode }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.numeroSerie.trim()) newErrors.numeroSerie = "Este campo es obligatorio.";
+    if (!formData.tipo.trim()) newErrors.tipo = "Este campo es obligatorio.";
+    if (!formData.marca.trim()) newErrors.marca = "Este campo es obligatorio.";
+    if (!formData.ubicacion.trim()) newErrors.ubicacion = "Este campo es obligatorio.";
+    if (!formData.estado.trim()) newErrors.estado = "Debes seleccionar un estado.";
+    if (!formData.fechaRegistro.trim()) newErrors.fechaRegistro = "Selecciona una fecha.";
+    return newErrors;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isDbReady()) {
-      alert("⚠️ La base de datos aún no está lista. Intenta de nuevo.");
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
-    if (existsMueble(formData.numeroSerie)) {
-      alert("⚠️ Ya existe un mueble con ese número de serie");
+    const user = auth.currentUser;
+    if (!user) {
+      alert("⚠️ Debes iniciar sesión para guardar.");
       return;
     }
 
-    const id = insertMueble(formData);
-    alert("✅ Mueble guardado");
-    navigate("/");
+    try {
+      console.log("📌 UID:", user.uid);
+      console.log("📦 Datos del mueble:", formData);
+
+      await insertMueble(user.uid, formData);
+      alert("✅ Mueble guardado");
+      navigate("/");
+    } catch (error) {
+      console.error("Error al guardar en Firebase:", error);
+      alert("❌ Error al guardar el mueble: " + error.message);
+    }
   };
 
   return (
@@ -64,7 +87,8 @@ const FurnitureForm = ({ qrCode }) => {
         placeholder="Ej: 001-AZUL-2024"
         className="p-2 rounded bg-gray-800 text-white"
       />
-      
+      {errors.numeroSerie && <p className="text-red-400 text-sm">{errors.numeroSerie}</p>}
+
       <label htmlFor="tipo" className="text-white">
         Tipo
       </label>
@@ -76,6 +100,8 @@ const FurnitureForm = ({ qrCode }) => {
         placeholder="Ej: Silla, Escritorio, Monitor"
         className="p-2 rounded bg-gray-800 text-white"
       />
+      {errors.tipo && <p className="text-red-400 text-sm">{errors.tipo}</p>}
+
       <label htmlFor="marca" className="text-white">
         Marca
       </label>
@@ -87,6 +113,8 @@ const FurnitureForm = ({ qrCode }) => {
         placeholder="Ej: HP, Dell, IKEA"
         className="p-2 rounded bg-gray-800 text-white"
       />
+      {errors.marca && <p className="text-red-400 text-sm">{errors.marca}</p>}
+
       <label htmlFor="ubicacion" className="text-white">
         Ubicación
       </label>
@@ -98,6 +126,8 @@ const FurnitureForm = ({ qrCode }) => {
         placeholder="Ej: Aula 3, Oficina 2° Piso"
         className="p-2 rounded bg-gray-800 text-white"
       />
+      {errors.ubicacion && <p className="text-red-400 text-sm">{errors.ubicacion}</p>}
+
       <label htmlFor="estado" className="text-white">
         Estado
       </label>
@@ -113,6 +143,8 @@ const FurnitureForm = ({ qrCode }) => {
         <option value="Regular">Regular</option>
         <option value="Malo">Malo</option>
       </select>
+      {errors.estado && <p className="text-red-400 text-sm">{errors.estado}</p>}
+
       <label htmlFor="notas" className="text-white">
         Notas
       </label>
@@ -124,6 +156,7 @@ const FurnitureForm = ({ qrCode }) => {
         placeholder="Ej: Equipado con cable HDMI, requiere limpieza, etc."
         className="p-2 rounded bg-gray-800 text-white"
       />
+
       <label htmlFor="fechaRegistro" className="text-white">
         Fecha de Registro
       </label>
@@ -135,6 +168,7 @@ const FurnitureForm = ({ qrCode }) => {
         onChange={handleChange}
         className="p-3 rounded bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
+      {errors.fechaRegistro && <p className="text-red-400 text-sm">{errors.fechaRegistro}</p>}
 
       <button
         type="submit"

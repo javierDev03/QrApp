@@ -1,6 +1,7 @@
 // src/components/MuebleDetail.jsx
 import React, { useState, useEffect } from 'react';
-import { db } from '../services/db';
+import { getMuebles, updateMueble, deleteMueble } from '../services/firebaseMuebles';
+import { auth } from '../firebase';
 
 const MuebleDetail = ({ id, onBack }) => {
   const [mueble, setMueble] = useState(null);
@@ -8,13 +9,12 @@ const MuebleDetail = ({ id, onBack }) => {
 
   useEffect(() => {
     const load = async () => {
-      const result = await db.exec(`SELECT * FROM muebles WHERE id = ?`, [id]);
-      if (result.length > 0 && result[0].values.length > 0) {
-        const keys = result[0].columns;
-        const values = result[0].values[0];
-        const obj = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
-        setMueble(obj);
-      }
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const muebles = await getMuebles(user.uid);
+      const encontrado = muebles.find((m) => m.id === id);
+      if (encontrado) setMueble(encontrado);
     };
     load();
   }, [id]);
@@ -24,18 +24,15 @@ const MuebleDetail = ({ id, onBack }) => {
   };
 
   const handleSave = async () => {
-    const { numeroSerie, tipo, marca, ubicacion, estado, notas } = mueble;
-    await db.run(
-      `UPDATE muebles SET numeroSerie = ?, tipo = ?, marca = ?, ubicacion = ?, estado = ?, notas = ? WHERE id = ?`,
-      [numeroSerie, tipo, marca, ubicacion, estado, notas, id]
-    );
+    const { numeroSerie, tipo, marca, ubicacion, estado, notas, fechaRegistro } = mueble;
+    await updateMueble(id, { numeroSerie, tipo, marca, ubicacion, estado, notas, fechaRegistro });
     alert('✅ Cambios guardados');
     setEditMode(false);
   };
 
   const handleDelete = async () => {
     if (confirm('¿Eliminar este mueble?')) {
-      await db.run(`DELETE FROM muebles WHERE id = ?`, [id]);
+      await deleteMueble(id);
       alert('🗑️ Eliminado');
       onBack();
     }

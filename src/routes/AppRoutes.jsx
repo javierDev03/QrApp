@@ -7,6 +7,7 @@ import FurnitureDetail from '../views/FurnitureDetail';
 import MobileLayout from '../layout/MobileLayout';
 import QRScanner from '../components/QRScanner';
 import PerfilPage from '../views/PerfilPage';
+import FurnitureChartPage from '../components/FurnitureChart';
 import NotFound from '../views/NotFound';
 import LoginPage from '../components/LoginForm';
 import RegisterPage from '../components/RegisterForm';
@@ -42,6 +43,7 @@ function AppRoutes() {
           <Route path="/" element={<MueblesList />} />
           <Route path="/scanner" element={<QRScanner onScan={handleQRScan} />} />
           <Route path="/perfil" element={<PerfilPage />} />
+          <Route path="/estadisticas" element={<FurnitureChartPage />} />
           <Route path="/detalle/:id" element={<FurnitureDetail />} />
           <Route path="/registrar" element={<FurnitureFormPage />} />
         </Route>

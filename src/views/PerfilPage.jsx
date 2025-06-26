@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default function PerfilPage() {
   const navigate = useNavigate();
-  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  const [usuario, setUsuario] = useState(null);
 
-  const handleLogout = () => {
-    localStorage.removeItem('usuario');
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+    });
+
+    return () => unsubscribe(); // limpiamos el listener
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut(auth);
     navigate('/login');
   };
 
@@ -24,7 +34,7 @@ export default function PerfilPage() {
           <div className="space-y-3 mb-6">
             <div className="bg-gray-800 p-3 rounded-md">
               <p className="text-sm text-gray-400">Nombre</p>
-              <p className="text-lg font-semibold">{usuario.nombre}</p>
+              <p className="text-lg font-semibold">{usuario.displayName || 'Sin nombre'}</p>
             </div>
             <div className="bg-gray-800 p-3 rounded-md">
               <p className="text-sm text-gray-400">Correo</p>

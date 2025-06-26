@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMuebles } from '../services/db';
+import { getMuebles } from '../services/firebaseMuebles';
+import { auth } from '../firebase';
 import { generatePDFReport } from '../utils/generatePDFReport';
 
 const MueblesList = () => {
@@ -13,7 +14,10 @@ const MueblesList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const raw = await getMuebles();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const raw = await getMuebles(user.uid);
       setMuebles(raw);
     };
     fetchData();

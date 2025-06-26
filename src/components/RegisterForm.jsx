@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { registerUser } from '../services/db';
+import { registerUser } from '../services/firebaseAuth';
 import { useNavigate } from 'react-router-dom';
 
 export default function RegisterForm() {
@@ -9,14 +9,15 @@ export default function RegisterForm() {
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const ok = registerUser(form);
-    if (ok) {
+    try {
+      await registerUser(form.email, form.password, form.nombre);
       alert('✅ Registrado correctamente');
-      navigate('/login'); // ⬅️ redirige al login
-    } else {
-      alert('❌ Ya existe ese email');
+      navigate('/login');
+    } catch (error) {
+      console.error("Error en registro:", error);
+      alert('❌ Ya existe ese email o el formato es inválido');
     }
   };
 
